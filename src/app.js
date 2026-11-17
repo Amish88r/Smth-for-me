@@ -80,6 +80,7 @@
   function pick(i) { sel = i; $('mainImg').src = imgs[i]; $('mainImg').alt = titles[i]; document.querySelectorAll('#gallery img').forEach(im => im.classList.toggle('on', +im.dataset.i === i)); renderMsgr(); }
 
   const M = {
+    max: { n: 'MAX', ic: '💠', c: '#5b3cf5', u: (u, x) => `https://max.ru/:share?text=${x}%20${u}` },
     telegram: { n: 'Telegram', ic: '✈️', c: '#2aa3e0', u: (u, x) => `https://t.me/share/url?url=${u}&text=${x}` },
     whatsapp: { n: 'WhatsApp', ic: '💬', c: '#25a556', u: (u, x) => `https://wa.me/?text=${x}%20${u}` },
     ok: { n: 'Одноклассники', ic: '🟠', c: '#ee8208', u: u => `https://connect.ok.ru/offer?url=${u}` },

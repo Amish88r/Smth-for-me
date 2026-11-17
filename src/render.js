@@ -19,7 +19,7 @@
       morning: 'Доброе утро!', day: 'Доброго дня!', night: 'Спокойной ночи!',
       week: ['Доброго воскресенья!', 'Хорошего понедельника!', 'Доброго вторника!', 'Прекрасной среды!', 'Чудесного четверга!', 'С пятницей! Отличных выходных!', 'Доброй субботы!'],
       wishes: ['Желаю крепкого здоровья, тепла и радости в каждом дне!', 'Пусть этот день будет светлым, а на душе будет спокойно!', 'Пусть в доме будет уют, а рядом — любимые люди!', 'Улыбнитесь! Вы — самое лучшее, что есть у ваших близких!', 'Тёплого чая, вкусных пирогов и добрых новостей!', 'Пусть каждый день дарит маленькие радости!'],
-      locale: 'ru-RU', msgr: ['telegram', 'ok', 'vk', 'viber', 'whatsapp', 'email'] },
+      locale: 'ru-RU', msgr: ['max', 'ok', 'vk', 'telegram', 'whatsapp', 'email'] },
     en: { todayQ: 'What is celebrated today?', dateQ: d => `What is celebrated on ${d}?`, world: 'Holidays around the world', none: 'No major public holidays on this day — but it is a lovely day all the same!',
       soon: 'Coming up', more: n => ` and ${n} more`, fact: 'Did you know?', main: 'Today\'s card', gallery: 'More cards', share: 'Send this card',
       hint: 'Tap any card below to choose it', note: 'The buttons below send a link to the site. To send the picture itself, use the big green button.',
