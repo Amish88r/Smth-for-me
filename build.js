@@ -151,7 +151,27 @@ fs.mkdirSync(path.join(OUT, 'assets/fonts'), { recursive: true });
 const urls = [];
 for (const lang of R.LANGS) { urls.push(page(lang, null)); for (const mmdd of R.ALL) urls.push(page(lang, mmdd)); }
 
-/* ---------- 5. Общие файлы ---------- */
+/* ---------- 5. Фотографии для открыток ---------- */
+// Кладите снимки в папку photos/. Сборщик обрезает их в квадрат 1080×1080 и сжимает.
+async function photos() {
+  const dir = path.join(__dirname, 'photos');
+  const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter(f => /\.(jpe?g|png|webp)$/i.test(f)).sort() : [];
+  if (!files.length) return [];
+  const sharp = require('sharp');
+  fs.mkdirSync(path.join(OUT, 'assets/photos'), { recursive: true });
+  const out = [];
+  for (const f of files) {
+    const name = 'p' + out.length + '-' + f.replace(/\.[^.]+$/, '').replace(/[^a-z0-9_-]/gi, '').slice(0, 30) + '.jpg';
+    try {
+      await sharp(path.join(dir, f)).rotate().resize(1080, 1080, { fit: 'cover', position: 'attention' }).jpeg({ quality: 78, mozjpeg: true }).toFile(path.join(OUT, 'assets/photos', name));
+      out.push('photos/' + name);
+    } catch (e) { console.log('Не удалось обработать фото:', f, e.message); }
+  }
+  return out;
+}
+
+(async () => {
+DATA.photos = await photos();
 fs.writeFileSync(path.join(OUT, 'assets/data.js'), 'window.DATA=' + JSON.stringify(DATA) + ';');
 for (const f of ['render.js', 'app.js', 'style.css']) fs.copyFileSync(path.join(__dirname, 'src', f), path.join(OUT, 'assets', f));
 const LATIN = 'U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2212,U+FEFF,U+FFFD';
@@ -173,6 +193,8 @@ if (cfg.adsTxt && cfg.adsTxt.trim()) fs.writeFileSync(path.join(OUT, 'ads.txt'),
 const withHol = R.ALL.filter(k => days[k].h.length).length;
 console.log(`Готово: ${urls.length} страниц, дата сборки ${DATA.built}`);
 console.log(`Праздники: ${names.length} названий, дней с праздниками: ${withHol} из 366`);
+console.log(`Фото для открыток: ${DATA.photos.length}`);
 console.log(`Приметы: ${facts.length}` + (cfg.onlyCheckedFacts ? ' (только проверенные)' : ` (из них проверено: ${FACTS.filter(f => f.ok).length})`));
 if (failed.length) console.log('Не удалось загрузить страны:', failed.join(', '));
 if (skipped.size) console.log(`Пропущено без перевода (${skipped.size}):\n  ` + [...skipped].map(([n, s]) => `${n} [${[...s].join(',')}]`).join('\n  '));
+})();

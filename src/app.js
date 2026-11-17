@@ -3,6 +3,7 @@
   const P = window.PAGE, D = window.DATA, T = R.T;
   const $ = id => document.getElementById(id);
   let lang = P.lang, sel = 0, imgs = [], titles = [];
+  const PHOTOS = [];
   function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
 
   const now = new Date();
@@ -21,11 +22,19 @@
   function wrap(ctx, text, maxW) { const words = text.split(' '), lines = []; let cur = ''; for (const w of words) { const t = cur ? cur + ' ' + w : w; if (ctx.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; } if (cur) lines.push(cur); return lines; }
   function rrect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
 
-  function drawCard(tpl, title, wish, seed) {
+  function drawCard(tpl, title, wish, seed, photo) {
     const cv = $('cv'), ctx = cv.getContext('2d'), W = 1080, Rn = rng(seed);
-    let g = ctx.createLinearGradient(0, 0, W, W); g.addColorStop(0, tpl.bg[0]); g.addColorStop(1, tpl.bg[1]); ctx.fillStyle = g; ctx.fillRect(0, 0, W, W);
-    g = ctx.createRadialGradient(W / 2, W * .45, 40, W / 2, W * .45, W * .6); g.addColorStop(0, 'rgba(255,215,90,.45)'); g.addColorStop(1, 'rgba(255,215,90,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, W);
-    for (let i = 0; i < 170; i++) { ctx.fillStyle = Rn() < .7 ? `rgba(255,${200 + Rn() * 55 | 0},${80 + Rn() * 120 | 0},${.35 + Rn() * .65})` : `rgba(255,255,255,${.4 + Rn() * .6})`; const r = 2 + Rn() * (Rn() < .12 ? 16 : 6); if (r > 8) star(ctx, Rn() * W, Rn() * W, r); else { ctx.beginPath(); ctx.arc(Rn() * W, Rn() * W, r / 2, 0, 7); ctx.fill(); } }
+    let g;
+    if (photo) {
+      ctx.drawImage(photo, 0, 0, W, W);
+      // затемнение сверху и снизу, чтобы текст читался на любом фото
+      g = ctx.createLinearGradient(0, 0, 0, W); g.addColorStop(0, 'rgba(40,0,15,.62)'); g.addColorStop(.3, 'rgba(40,0,15,0)'); g.addColorStop(.62, 'rgba(40,0,15,0)'); g.addColorStop(1, 'rgba(40,0,15,.72)');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, W);
+    } else {
+      g = ctx.createLinearGradient(0, 0, W, W); g.addColorStop(0, tpl.bg[0]); g.addColorStop(1, tpl.bg[1]); ctx.fillStyle = g; ctx.fillRect(0, 0, W, W);
+      g = ctx.createRadialGradient(W / 2, W * .45, 40, W / 2, W * .45, W * .6); g.addColorStop(0, 'rgba(255,215,90,.45)'); g.addColorStop(1, 'rgba(255,215,90,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, W);
+    }
+    for (let i = 0; i < (photo ? 110 : 170); i++) { ctx.fillStyle = Rn() < .7 ? `rgba(255,${200 + Rn() * 55 | 0},${80 + Rn() * 120 | 0},${.35 + Rn() * .65})` : `rgba(255,255,255,${.4 + Rn() * .6})`; const r = 2 + Rn() * (Rn() < .12 ? 16 : 6); if (r > 8) star(ctx, Rn() * W, Rn() * W, r); else { ctx.beginPath(); ctx.arc(Rn() * W, Rn() * W, r / 2, 0, 7); ctx.fill(); } }
     const gold = ctx.createLinearGradient(0, 0, W, W); gold.addColorStop(0, '#fff3b0'); gold.addColorStop(.35, '#ffd54a'); gold.addColorStop(.6, '#c98a00'); gold.addColorStop(1, '#ffe68a');
     ctx.strokeStyle = gold; ctx.lineWidth = 22; ctx.strokeRect(30, 30, W - 60, W - 60); ctx.lineWidth = 4; ctx.strokeRect(58, 58, W - 116, W - 116);
     ctx.fillStyle = gold; [[58, 58], [W - 58, 58], [58, W - 58], [W - 58, W - 58]].forEach(([x, y]) => star(ctx, x, y, 30));
@@ -36,10 +45,10 @@
     let y = 225 - (lines.length - 1) * lh / 2;
     lines.forEach(l => { ctx.lineWidth = 12; ctx.strokeStyle = 'rgba(40,0,10,.75)'; ctx.strokeText(l, W / 2, y); ctx.fillStyle = tg; ctx.shadowColor = 'rgba(255,215,90,.8)'; ctx.shadowBlur = 25; ctx.fillText(l, W / 2, y); ctx.shadowBlur = 0; y += lh; });
 
-    ctx.font = '170px serif'; ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 30; ctx.fillText(tpl.emoji, W / 2, 500); ctx.shadowBlur = 0;
+    if (!photo) { ctx.font = '170px serif'; ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 30; ctx.fillText(tpl.emoji, W / 2, 500); ctx.shadowBlur = 0; }
 
-    ctx.font = '700 64px Caveat'; const wl = wrap(ctx, '«' + wish + '»', 820); const bh = wl.length * 72 + 50, by = 650;
-    ctx.fillStyle = 'rgba(0,0,0,.35)'; rrect(ctx, 110, by, W - 220, bh, 36); ctx.fill(); ctx.strokeStyle = 'rgba(255,213,74,.6)'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.font = '700 64px Caveat'; const wl = wrap(ctx, '«' + wish + '»', 820); const bh = wl.length * 72 + 50, by = photo ? W - 130 - bh : 650;
+    ctx.fillStyle = photo ? 'rgba(40,0,15,.55)' : 'rgba(0,0,0,.35)'; rrect(ctx, 110, by, W - 220, bh, 36); ctx.fill(); ctx.strokeStyle = 'rgba(255,213,74,.6)'; ctx.lineWidth = 3; ctx.stroke();
     ctx.fillStyle = '#fff3d0'; wl.forEach((l, i) => ctx.fillText(l, W / 2, by + 60 + i * 72));
 
     ctx.font = '800 30px Nunito'; ctx.fillStyle = 'rgba(255,236,170,.85)'; ctx.fillText('✨ ' + P.site + ' ✨', W / 2, W - 92);
@@ -68,10 +77,12 @@
 
     const base = pageDate.getFullYear() * 1000 + pageDate.getMonth() * 40 + pageDate.getDate(), title = dayTitle(t), special = dayInfo.g && dayInfo.g[lang];
     imgs = []; titles = [];
+    const dayNo = Math.floor(Date.UTC(pageDate.getFullYear(), pageDate.getMonth(), pageDate.getDate()) / 864e5);
     TPL.forEach((tpl, i) => {
       const w = t.wishes[(i + pageDate.getDate()) % t.wishes.length];
       const tt = i % 2 && !special ? (P.date || now.getHours() >= 12 ? t.day : t.morning) : title;
-      titles.push(tt); imgs.push(drawCard(tpl, tt, w, base * 10 + i));
+      const ph = PHOTOS.length ? PHOTOS[(dayNo * TPL.length + i) % PHOTOS.length] : null;   // каждый день — новые фото
+      titles.push(tt); imgs.push(drawCard(tpl, tt, w, base * 10 + i, ph));
     });
     $('gallery').innerHTML = imgs.map((s, i) => `<img src="${s}" data-i="${i}" alt="${R.esc(titles[i])}">`).join('');
     pick(Math.min(sel, imgs.length - 1));
@@ -117,6 +128,8 @@
     if (saved && T[saved]) lang = saved;
     else if (P.auto) { const nav = (navigator.language || '').slice(0, 2); if (T[nav]) lang = nav; }   // главная без выбранного языка — по языку телефона
     setFont(store('font') || 19);
+    await Promise.all((D.photos || []).map(src => new Promise(ok => { const im = new Image(); im.onload = () => { PHOTOS.push(im); ok(); }; im.onerror = ok; im.src = P.prefix + 'assets/' + src; })));
+    PHOTOS.sort((a, b) => a.src < b.src ? -1 : 1);
     try { await Promise.all([document.fonts.load('96px Lobster', 'Аб'), document.fonts.load('700 64px Caveat', 'Аб'), document.fonts.load('800 30px Nunito', 'Аб')]); } catch (e) { }
     // Перерисовываем панель, если язык или день не совпали с тем, что собрано заранее
     render(lang !== P.lang || mmdd !== P.rendered);
