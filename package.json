@@ -1,0 +1,16 @@
+{
+  "name": "otkrytki-dnya",
+  "version": "1.0.0",
+  "description": "Сайт открыток: праздники в мире, примета дня",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "@fontsource/caveat": "^5.3.0",
+    "@fontsource/lobster": "^5.3.0",
+    "@fontsource/nunito": "^5.3.0",
+    "date-holidays": "^3.39.2"
+  },
+  "private": true
+}
