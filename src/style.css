@@ -65,3 +65,13 @@ footer .small{opacity:.75;font-size:.72rem}
 .modal img{width:100%;border-radius:16px}
 .modal p{font-size:1.15rem;font-weight:800;color:var(--bord)}
 .modal .close{margin-top:10px;width:100%;border:0;border-radius:16px;background:var(--bord);color:#fff;font-size:1.2rem;font-weight:900;padding:14px}
+
+.own label{display:block;font-weight:900;color:var(--bord);margin:14px 0 6px;font-size:1.05rem}
+.own .field{display:flex;gap:8px;align-items:stretch}
+.own input,.own textarea{flex:1;font:inherit;font-size:1.15rem;font-weight:700;border:3px solid var(--gold2);border-radius:16px;padding:12px 14px;background:#fffdf6;color:var(--ink);min-width:0;resize:vertical}
+.own input:focus,.own textarea:focus{outline:3px solid var(--bord);outline-offset:1px}
+.mic{flex:none;width:64px;border:3px solid var(--gold2);border-radius:16px;background:#fff1c7;font-size:1.7rem}
+.mic.on{background:#e53950;border-color:#e53950;animation:pulse 1s infinite}
+@keyframes pulse{50%{transform:scale(1.08)}}
+.bigshare.make{background:linear-gradient(180deg,#c2185b,var(--bord));box-shadow:0 8px 0 #4d0614,0 10px 24px rgba(0,0,0,.25);font-size:1.4rem}
+.bigshare.make:active{box-shadow:0 3px 0 #4d0614}

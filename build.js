@@ -119,6 +119,15 @@ ${cfg.ads.head || ''}
     <div class="msgr" id="msgr"></div>
     <p class="msgr-note" data-t="note">${t.note}</p>
   </section>
+  <section class="box own">
+    <h2 data-t="own">${t.own}</h2>
+    <p class="hint" data-t="ownHint">${t.ownHint}</p>
+    <label for="cTo" data-t="to">${t.to}</label>
+    <div class="field"><input id="cTo" maxlength="40" placeholder="${R.esc(t.toPh)}" data-ph="toPh"><button class="mic" data-for="cTo" hidden aria-label="🎤">🎤</button></div>
+    <label for="cWish" data-t="wishL">${t.wishL}</label>
+    <div class="field"><textarea id="cWish" maxlength="160" rows="3" placeholder="${R.esc(t.wishPh)}" data-ph="wishPh"></textarea><button class="mic" data-for="cWish" hidden aria-label="🎤">🎤</button></div>
+    <button class="bigshare make" id="makeBtn" data-t="make">${t.make}</button>
+  </section>
   ${adSlot(cfg.ads.slot2, t)}
   <section class="box">
     <h2 data-t="gallery">${t.gallery}</h2>
@@ -170,8 +179,26 @@ async function photos() {
   return out;
 }
 
+// Картинки дня от нейросети (scripts/ai-images.js кладёт их в ai-today/)
+async function aiToday() {
+  const dir = path.join(__dirname, 'ai-today');
+  const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter(f => /\.(jpe?g|png)$/i.test(f)).sort() : [];
+  const out = [];
+  if (!files.length) return out;
+  const sharp = require('sharp');
+  fs.mkdirSync(path.join(OUT, 'assets/ai'), { recursive: true });
+  for (const f of files) {
+    try {
+      await sharp(path.join(dir, f)).resize(1080, 1080, { fit: 'cover' }).jpeg({ quality: 80, mozjpeg: true }).toFile(path.join(OUT, 'assets/ai', f.replace(/\.png$/i, '.jpg')));
+      out.push('ai/' + f.replace(/\.png$/i, '.jpg') + '?' + DATA.built);
+    } catch (e) { console.log('Не удалось обработать картинку нейросети:', f); }
+  }
+  return out;
+}
+
 (async () => {
 DATA.photos = await photos();
+DATA.today = await aiToday();
 fs.writeFileSync(path.join(OUT, 'assets/data.js'), 'window.DATA=' + JSON.stringify(DATA) + ';');
 for (const f of ['render.js', 'app.js', 'style.css']) fs.copyFileSync(path.join(__dirname, 'src', f), path.join(OUT, 'assets', f));
 const LATIN = 'U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2212,U+FEFF,U+FFFD';
@@ -193,7 +220,7 @@ if (cfg.adsTxt && cfg.adsTxt.trim()) fs.writeFileSync(path.join(OUT, 'ads.txt'),
 const withHol = R.ALL.filter(k => days[k].h.length).length;
 console.log(`Готово: ${urls.length} страниц, дата сборки ${DATA.built}`);
 console.log(`Праздники: ${names.length} названий, дней с праздниками: ${withHol} из 366`);
-console.log(`Фото для открыток: ${DATA.photos.length}`);
+console.log(`Фото для открыток: ${DATA.photos.length}, от нейросети сегодня: ${DATA.today.length}`);
 console.log(`Приметы: ${facts.length}` + (cfg.onlyCheckedFacts ? ' (только проверенные)' : ` (из них проверено: ${FACTS.filter(f => f.ok).length})`));
 if (failed.length) console.log('Не удалось загрузить страны:', failed.join(', '));
 if (skipped.size) console.log(`Пропущено без перевода (${skipped.size}):\n  ` + [...skipped].map(([n, s]) => `${n} [${[...s].join(',')}]`).join('\n  '));

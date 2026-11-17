@@ -8,7 +8,7 @@
   const CI = { ru: 0, en: 1, de: 2 };   // позиция языка в названиях стран [ru, en, de]
 
   const T = {
-    ru: { todayQ: 'Какой сегодня праздник?', dateQ: d => `Какой праздник ${d}?`, world: 'Праздники в мире', none: 'Больших государственных праздников в этот день нет — зато день всё равно хороший!',
+    ru: { own: 'Своя открытка', ownHint: 'Напишите или продиктуйте 🎤, кого поздравляем и что пожелать. Текст появится на выбранной открытке.', to: 'Кому', toPh: 'Например: Дорогая Галочка!', wishL: 'Пожелание', wishPh: 'Например: С днём рождения! Здоровья и радости!', make: '✨ Сделать открытку', todayQ: 'Какой сегодня праздник?', dateQ: d => `Какой праздник ${d}?`, world: 'Праздники в мире', none: 'Больших государственных праздников в этот день нет — зато день всё равно хороший!',
       soon: 'Скоро', more: n => ` и ещё ${n}`, fact: 'А вы знали?', main: 'Открытка на сегодня', gallery: 'Ещё открытки', share: 'Отправить открытку',
       hint: 'Нажмите на любую открытку ниже, чтобы выбрать её', note: 'Кнопки ниже отправляют ссылку на сайт. Чтобы отправить саму картинку — большая зелёная кнопка.',
       save: 'Нажмите на картинку и подержите палец, затем выберите «Сохранить» или «Поделиться»', close: 'Закрыть', ad: 'Реклама', adTxt: 'Здесь будет рекламный блок',
@@ -20,7 +20,7 @@
       week: ['Доброго воскресенья!', 'Хорошего понедельника!', 'Доброго вторника!', 'Прекрасной среды!', 'Чудесного четверга!', 'С пятницей! Отличных выходных!', 'Доброй субботы!'],
       wishes: ['Желаю крепкого здоровья, тепла и радости в каждом дне!', 'Пусть этот день будет светлым, а на душе будет спокойно!', 'Пусть в доме будет уют, а рядом — любимые люди!', 'Улыбнитесь! Вы — самое лучшее, что есть у ваших близких!', 'Тёплого чая, вкусных пирогов и добрых новостей!', 'Пусть каждый день дарит маленькие радости!'],
       locale: 'ru-RU', msgr: ['max', 'ok', 'vk', 'telegram', 'whatsapp', 'email'] },
-    en: { todayQ: 'What is celebrated today?', dateQ: d => `What is celebrated on ${d}?`, world: 'Holidays around the world', none: 'No major public holidays on this day — but it is a lovely day all the same!',
+    en: { own: 'Make your own card', ownHint: 'Type or say 🎤 who the card is for and what you wish them. The text will appear on the chosen card.', to: 'To', toPh: 'For example: Dear Margaret!', wishL: 'Your wish', wishPh: 'For example: Happy birthday! Health and joy!', make: '✨ Make the card', todayQ: 'What is celebrated today?', dateQ: d => `What is celebrated on ${d}?`, world: 'Holidays around the world', none: 'No major public holidays on this day — but it is a lovely day all the same!',
       soon: 'Coming up', more: n => ` and ${n} more`, fact: 'Did you know?', main: 'Today\'s card', gallery: 'More cards', share: 'Send this card',
       hint: 'Tap any card below to choose it', note: 'The buttons below send a link to the site. To send the picture itself, use the big green button.',
       save: 'Press and hold the picture, then choose "Save" or "Share"', close: 'Close', ad: 'Advertisement', adTxt: 'Ad space',
@@ -32,7 +32,7 @@
       week: ['Happy Sunday!', 'Happy Monday!', 'Have a lovely Tuesday!', 'Happy Wednesday!', 'Happy Thursday!', 'Happy Friday! Enjoy the weekend!', 'Happy Saturday!'],
       wishes: ['Wishing you good health, warmth and joy every day!', 'May your day be bright and your heart be peaceful!', 'May your home be cosy and your loved ones near!', 'Smile! You are the best thing in your family\'s life!', 'A warm cup of tea, a slice of cake and good news!', 'May every day bring you little joys!'],
       locale: 'en-GB', msgr: ['whatsapp', 'facebook', 'telegram', 'viber', 'email'] },
-    de: { todayQ: 'Was wird heute gefeiert?', dateQ: d => `Was wird am ${d} gefeiert?`, world: 'Feiertage in aller Welt', none: 'An diesem Tag gibt es keine großen Feiertage — ein schöner Tag ist es trotzdem!',
+    de: { own: 'Eigene Karte', ownHint: 'Schreiben oder sprechen Sie 🎤, wem Sie gratulieren und was Sie wünschen. Der Text erscheint auf der gewählten Karte.', to: 'Für', toPh: 'Zum Beispiel: Liebe Gisela!', wishL: 'Ihr Wunsch', wishPh: 'Zum Beispiel: Alles Gute zum Geburtstag!', make: '✨ Karte erstellen', todayQ: 'Was wird heute gefeiert?', dateQ: d => `Was wird am ${d} gefeiert?`, world: 'Feiertage in aller Welt', none: 'An diesem Tag gibt es keine großen Feiertage — ein schöner Tag ist es trotzdem!',
       soon: 'Demnächst', more: n => ` und ${n} weitere`, fact: 'Wussten Sie schon?', main: 'Die Karte für heute', gallery: 'Weitere Karten', share: 'Karte verschicken',
       hint: 'Tippen Sie unten auf eine Karte, um sie auszuwählen', note: 'Die Knöpfe unten verschicken einen Link zur Seite. Für das Bild selbst: der große grüne Knopf.',
       save: 'Bild gedrückt halten, dann „Speichern“ oder „Teilen“ wählen', close: 'Schließen', ad: 'Anzeige', adTxt: 'Werbefläche',

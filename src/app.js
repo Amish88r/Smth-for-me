@@ -3,7 +3,12 @@
   const P = window.PAGE, D = window.DATA, T = R.T;
   const $ = id => document.getElementById(id);
   let lang = P.lang, sel = 0, imgs = [], titles = [];
-  const PHOTOS = [];
+  const CACHE = {};
+  function loadImg(src) {
+    if (!CACHE[src]) CACHE[src] = new Promise(ok => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => ok(null); im.src = P.prefix + 'assets/' + src; });
+    return CACHE[src];
+  }
+  let cards = [];   // параметры каждой открытки, чтобы перерисовать её со своим текстом
   function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
 
   const now = new Date();
@@ -63,12 +68,13 @@
     return wd;
   }
 
-  function render(panelsToo) {
+  async function render(panelsToo) {
     const t = T[lang];
     document.documentElement.lang = lang;
     if (panelsToo) {
       $('panels').innerHTML = R.panels(lang, mmdd, D, P.prefix, !P.date);
       document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t[el.dataset.t]; });
+      document.querySelectorAll('[data-ph]').forEach(el => { el.placeholder = t[el.dataset.ph]; });
       $('brand').textContent = '🌹 ' + P.names[lang] + ' 🌹';
       document.title = P.date ? t.titleDate(R.fmtDate(lang, mmdd), P.names[lang]) : t.titleIndex(P.names[lang]);
     }
@@ -76,14 +82,19 @@
     $('dateStr').textContent = ds.charAt(0).toUpperCase() + ds.slice(1);
 
     const base = pageDate.getFullYear() * 1000 + pageDate.getMonth() * 40 + pageDate.getDate(), title = dayTitle(t), special = dayInfo.g && dayInfo.g[lang];
-    imgs = []; titles = [];
+    imgs = []; titles = []; cards = [];
     const dayNo = Math.floor(Date.UTC(pageDate.getFullYear(), pageDate.getMonth(), pageDate.getDate()) / 864e5);
+    const pool = (D.photos || []).slice().sort();
+    const ai = !P.date ? (D.today || []) : [];   // картинки, нарисованные нейросетью сегодня — на главной
+    const srcs = TPL.map((_, i) => ai[i] || (pool.length ? pool[(dayNo * TPL.length + i) % pool.length] : null));   // каждый день — новые фото
+    const loaded = await Promise.all(srcs.map(s => s ? loadImg(s) : null));
     TPL.forEach((tpl, i) => {
       const w = t.wishes[(i + pageDate.getDate()) % t.wishes.length];
       const tt = i % 2 && !special ? (P.date || now.getHours() >= 12 ? t.day : t.morning) : title;
-      const ph = PHOTOS.length ? PHOTOS[(dayNo * TPL.length + i) % PHOTOS.length] : null;   // каждый день — новые фото
-      titles.push(tt); imgs.push(drawCard(tpl, tt, w, base * 10 + i, ph));
+      cards.push({ tpl, ph: loaded[i], seed: base * 10 + i });
+      titles.push(tt); imgs.push(drawCard(tpl, tt, w, base * 10 + i, loaded[i]));
     });
+    if (custom) addCustom(false);
     $('gallery').innerHTML = imgs.map((s, i) => `<img src="${s}" data-i="${i}" alt="${R.esc(titles[i])}">`).join('');
     pick(Math.min(sel, imgs.length - 1));
     document.querySelectorAll('#langSeg button').forEach(b => b.classList.toggle('on', b.dataset.l === lang));
@@ -119,7 +130,41 @@
   $('shareBtn').onclick = shareImage;
   $('mainImg').onclick = showModal;
   $('closeBtn').onclick = () => $('modal').classList.remove('show');
-  $('langSeg').onclick = e => { const l = e.target.dataset.l; if (l && l !== lang) { lang = l; store('lang', l); render(true); } };
+  $('langSeg').onclick = e => { const l = e.target.dataset.l; if (l && l !== lang) { lang = l; store('lang', l); render(true); setupMic(); } };
+
+  /* ---------- Своя открытка: имя и пожелание, можно надиктовать ---------- */
+  let custom = null;   // своя открытка: { to, wish, base — номер открытки-основы }
+  function addCustom(scroll) {
+    const c = cards[custom.base] || cards[0];
+    imgs.push(drawCard(c.tpl, custom.to, custom.wish, c.seed, c.ph)); titles.push(custom.to);
+    $('gallery').innerHTML = imgs.map((s, i) => `<img src="${s}" data-i="${i}" alt="${R.esc(titles[i])}">`).join('');
+    pick(imgs.length - 1);
+    if (scroll) window.scrollTo({ top: $('mainImg').offsetTop - 80, behavior: 'smooth' });
+  }
+  $('makeBtn').onclick = () => {
+    const to = $('cTo').value.trim(), wish = $('cWish').value.trim();
+    if (!to && !wish) { $('cTo').focus(); return; }
+    if (custom) { imgs.pop(); titles.pop(); }
+    custom = { to: to || T[lang].day, wish: wish || T[lang].wishes[0], base: custom && sel === imgs.length ? custom.base : Math.min(sel, TPL.length - 1) };
+    addCustom(true);
+  };
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let rec = null;
+  function setupMic() {
+    document.querySelectorAll('.mic').forEach(b => { b.hidden = !SR; });
+  }
+  document.querySelectorAll('.mic').forEach(b => b.onclick = () => {
+    if (!SR) return;
+    const field = $(b.dataset.for);
+    if (rec) { rec.stop(); return; }
+    try {
+      rec = new SR(); rec.lang = T[lang].locale; rec.interimResults = false; rec.maxAlternatives = 1;
+      b.classList.add('on');
+      rec.onresult = e => { const txt = e.results[0][0].transcript; field.value = (field.value ? field.value + ' ' : '') + txt.charAt(0).toUpperCase() + txt.slice(1); };
+      rec.onend = rec.onerror = () => { b.classList.remove('on'); rec = null; };
+      rec.start();
+    } catch (e) { b.classList.remove('on'); rec = null; }
+  });
   function setFont(f) { document.documentElement.style.fontSize = f + 'px'; document.querySelectorAll('#fontSeg button').forEach(b => b.classList.toggle('on', b.dataset.f == f)); store('font', f); }
   $('fontSeg').onclick = e => { const b = e.target.closest('button'); if (b) setFont(b.dataset.f); };
 
@@ -128,10 +173,9 @@
     if (saved && T[saved]) lang = saved;
     else if (P.auto) { const nav = (navigator.language || '').slice(0, 2); if (T[nav]) lang = nav; }   // главная без выбранного языка — по языку телефона
     setFont(store('font') || 19);
-    await Promise.all((D.photos || []).map(src => new Promise(ok => { const im = new Image(); im.onload = () => { PHOTOS.push(im); ok(); }; im.onerror = ok; im.src = P.prefix + 'assets/' + src; })));
-    PHOTOS.sort((a, b) => a.src < b.src ? -1 : 1);
     try { await Promise.all([document.fonts.load('96px Lobster', 'Аб'), document.fonts.load('700 64px Caveat', 'Аб'), document.fonts.load('800 30px Nunito', 'Аб')]); } catch (e) { }
     // Перерисовываем панель, если язык или день не совпали с тем, что собрано заранее
-    render(lang !== P.lang || mmdd !== P.rendered);
+    await render(lang !== P.lang || mmdd !== P.rendered);
+    setupMic();
   })();
 })();

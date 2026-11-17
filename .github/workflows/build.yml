@@ -26,6 +26,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Картинки дня от нейросети (если заданы ключи Cloudflare)
+        run: node scripts/ai-images.js
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
       - run: node build.js
       - uses: actions/upload-pages-artifact@v3
         with:
